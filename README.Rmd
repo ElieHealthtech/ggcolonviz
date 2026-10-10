@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of ggcolonviz is to provide a ggplot2 extension for visualizing the colon in a clear and informative way. It offers a set of functions to create detailed and customizable plots of the colon, allowing users to easily represent various aspects of colon anatomy and related data.
+The goal of ggcolonviz is to provide a ggplot2 extension for visualizing the colon, and with the `"ibd"` variant the whole gastrointestinal tract, in a clear and informative way. It is designed for inflammatory bowel disease (IBD) data: segment scores, Montreal disease location, lesions, and changes over time.
 
 
 ## Installation
@@ -28,9 +28,34 @@ The goal of ggcolonviz is to provide a ggplot2 extension for visualizing the col
 remotes::install_github("Sanofi-Public/ggcolonviz")
 ```
 
-## Example
+## Quick start
 
-Here is a basic example of how to use ggcolonviz to create a simple plot of the colon:
+See which segments exist, then colour them with your own per-segment data:
+
+```{r map, fig.height = 7, out.width = "50%"}
+library(ggcolonviz)
+
+colon_map("ibd")
+```
+
+```{r quick-start, fig.height = 7, out.width = "50%"}
+scores <- data.frame(
+  part = c("Terminal ileum", "Cecum", "Ascending", "Transverse",
+           "Descending", "Sigmoid", "Rectum", "Perianal"),
+  score = c(3, 2, 1, 0, 0, 1, 2, 1)
+)
+
+colon_plot(scores, fill = score, variant = "ibd")
+```
+
+`colon_parts()` lists the valid segment names, `montreal_parts()` translates
+Montreal codes (L1-L4, p, E1-E3) into segments, and `colon_position()` places
+lesions on a segment. See `vignette("IBD", package = "ggcolonviz")` for a
+step-by-step guide.
+
+## Building plots layer by layer
+
+For full control, use the `geom_colon()` and `geom_colon_label()` layers directly:
 
 ```{r example}
 library(ggcolonviz)

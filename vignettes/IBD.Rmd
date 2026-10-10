@@ -1,0 +1,154 @@
+---
+title: "Getting started: IBD data on the gut"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started: IBD data on the gut}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 5,
+  fig.height = 7,
+  out.width = "60%"
+)
+```
+
+This vignette is for anyone who has a table of results per gut segment, such
+as endoscopy scores, histology grades or biomarker levels, and wants a figure.
+You do not need to know anything about coordinates or `ggplot2` layers.
+
+```{r setup}
+library(ggcolonviz)
+library(ggplot2)
+```
+
+## 1. See which segments exist
+
+ggcolonviz has three layouts, called *variants*:
+
+* `"standard"`: the colon with the terminal ileum;
+* `"sescd"`: the five SES-CD segments;
+* `"ibd"`: the whole gastrointestinal tract, from the esophagus to the
+  perianal region.
+
+`colon_map()` draws a variant with every segment named:
+
+```{r map}
+colon_map("ibd")
+```
+
+`colon_parts()` gives the same information as a table. Use the names in the
+`part` column in your own data:
+
+```{r parts}
+colon_parts("ibd")
+```
+
+## 2. Colour segments by a score
+
+Your data needs one row per segment: a column with the segment name and a
+column with the value to show. Spelling is flexible: `"TI"`,
+`"terminal ileum"`, `"caecum"` and `"sigmoid colon"` are all understood.
+
+```{r scores}
+endoscopy <- data.frame(
+  segment = c("TI", "caecum", "Ascending colon", "Transverse",
+              "Descending", "Sigmoid colon", "Rectum"),
+  ulcer_score = c(3, 2, 1, 0, 0, 1, 2)
+)
+
+colon_plot(endoscopy, part = segment, fill = ulcer_score, variant = "ibd")
+```
+
+Segments that are not in your table are still drawn, in light grey, so the
+reader can tell "not assessed" from "score 0". Use `show_all = FALSE` to hide
+them.
+
+The result is an ordinary ggplot, so titles and colour scales can be added
+in the usual way:
+
+```{r customise}
+colon_plot(endoscopy, part = segment, fill = ulcer_score, variant = "ibd") +
+  scale_fill_viridis_c(option = "magma", direction = -1, name = "Ulcer score") +
+  labs(title = "Patient 001 - baseline colonoscopy")
+```
+
+If a segment name is not recognised, you get a warning that lists the valid
+names. The row is not drawn:
+
+```{r unknown}
+colon_plot(data.frame(part = c("Rectum", "Spleen")), variant = "ibd")
+```
+
+## 3. Disease location (Montreal classification)
+
+`montreal_parts()` returns the segments covered by a Montreal code:
+
+* L1 ileal, L2 colonic, L3 ileocolonic, L4 upper GI and p perianal for
+  Crohn's disease;
+* E1 proctitis, E2 left-sided and E3 extensive for ulcerative colitis.
+
+```{r montreal}
+montreal_parts("L3")
+
+crohns <- data.frame(part = montreal_parts(c("L3", "p")), location = "Involved")
+colon_plot(crohns, fill = location, variant = "ibd") +
+  scale_fill_manual(values = c(Involved = "#D7301F")) +
+  labs(title = "Crohn's disease, Montreal L3 + p")
+```
+
+## 4. Several patients or visits
+
+Add a column that identifies the panel and pass it to `facet`:
+
+```{r visits, fig.width = 8, fig.height = 4, out.width = "100%"}
+visits <- rbind(
+  data.frame(visit = "Week 0",  part = c("TI", "Cecum", "Rectum"), score = c(3, 2, 3)),
+  data.frame(visit = "Week 12", part = c("TI", "Cecum", "Rectum"), score = c(1, 0, 1)),
+  data.frame(visit = "Week 52", part = c("TI", "Cecum", "Rectum"), score = c(0, 0, 0))
+)
+
+colon_plot(visits, fill = score, facet = visit)
+```
+
+## 5. Mark lesions on a segment
+
+`colon_position()` turns a segment name into plotting coordinates. `where`
+moves the point along the segment: 0 is the left or bottom end, 1 the right or
+top end.
+
+```{r lesions}
+lesions <- data.frame(
+  part = c("Terminal Ileum", "Sigmoid", "Sigmoid", "Perianal"),
+  where = c(0.5, 0.2, 0.8, 0.5),
+  finding = c("Stricture", "Ulcer", "Ulcer", "Fistula")
+)
+lesions <- cbind(
+  lesions,
+  colon_position(lesions$part, where = lesions$where, variant = "ibd")[c("x", "y")]
+)
+
+colon_plot(lesions, variant = "ibd", label = FALSE) +
+  geom_point(data = lesions, aes(x = x, y = y, shape = finding), size = 3)
+```
+
+## Accepted segment names
+
+Matching ignores case, spaces and punctuation. On top of the names returned
+by `colon_parts()`, these synonyms are accepted:
+
+| You can write | Interpreted as |
+|---|---|
+| TI, terminal ileum, neo-terminal ileum | Terminal Ileum (`"ibd"`) or Ileum |
+| ileum | Ileum or Terminal Ileum (`"ibd"`) |
+| ICV, ileocaecal valve | Ileocecal Valve |
+| caecum | Cecum |
+| ascending / transverse / descending / sigmoid colon | Ascending / Transverse / Descending / Sigmoid |
+| right colon, left colon | Right, Left (`"sescd"`) |
+| oesophagus, gastric | Esophagus, Stomach |
+| anus | Anal Canal |
+| perianal region, perianal disease | Perianal |

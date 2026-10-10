@@ -1,16 +1,18 @@
 Package: ggcolonviz
-Title: A 'ggplot2' Extension for Visualizing the Colon
-Version: 0.0.6
+Title: A 'ggplot2' Extension for Visualizing the Colon and Gastrointestinal Tract
+Version: 0.1.0
 Authors@R: c(
     person("Yoni", "Sidi", , "yoni.sidi@sanofi.com", role = c("aut", "cre")),
     person("Sanofi", role = "cph")
     )
 SystemRequirements: GDAL (>= 2.0.1), GEOS (>= 3.4.0), PROJ (>= 4.8.0), sqlite3
 Description: Provides a 'ggplot2' extension for creating clear, customizable
-    visualizations of the colon. Includes geometry and label layers for
-    plotting colon anatomy and overlaying related data, along with helpers
-    for converting colon segments to 'sf' polygons and generating heatmap
-    grids across the colon geometry.
+    visualizations of the colon and, for inflammatory bowel disease, the
+    whole gastrointestinal tract. Includes geometry and label layers for
+    plotting anatomy and overlaying related data, one-call helpers for
+    per-segment data and Montreal classification, along with helpers
+    for converting segments to 'sf' polygons and generating heatmap
+    grids across the geometry.
 License: Apache License (>= 2)
 Copyright: file inst/NOTICE
 Encoding: UTF-8
