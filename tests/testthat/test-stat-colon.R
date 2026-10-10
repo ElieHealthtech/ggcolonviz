@@ -58,7 +58,7 @@ test_that("y offset is applied correctly", {
     expect_equal(d_off$y - d_zero$y, rep(10, nrow(d_zero)), tolerance = 1e-9)
 })
 
-test_that("unknown part is silently dropped without error", {
+test_that("unknown part is dropped with a warning, without error", {
     df <- data.frame(
         x = 0,
         y = 0,
@@ -67,8 +67,7 @@ test_that("unknown part is silently dropped without error", {
     )
     p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, part = part)) +
         geom_colon()
-    expect_no_error(ggplot2::layer_data(p))
-    d <- ggplot2::layer_data(p)
+    expect_warning(d <- ggplot2::layer_data(p), "unknown part.*BadPart")
     expect_equal(length(unique(d$group)), 1)
 })
 
@@ -103,5 +102,6 @@ test_that("no rows are returned for a data frame with only unknown parts", {
     df <- data.frame(x = 0, y = 0, part = "NotAPart", stringsAsFactors = FALSE)
     p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, part = part)) +
         geom_colon()
-    expect_no_error(ggplot2::layer_data(p))
+    expect_warning(d <- ggplot2::layer_data(p), "NotAPart")
+    expect_equal(nrow(d), 0)
 })

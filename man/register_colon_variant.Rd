@@ -8,7 +8,7 @@ register_colon_variant(name, data)
 }
 \arguments{
 \item{name}{A non-empty character string naming the new variant.
-Existing variants (including \code{"standard"} and \code{"sescd"}) will be
+Existing variants (including \code{"standard"}, \code{"sescd"} and \code{"ibd"}) will be
 overwritten if the same name is supplied.}
 
 \item{data}{A data frame with at least three columns:

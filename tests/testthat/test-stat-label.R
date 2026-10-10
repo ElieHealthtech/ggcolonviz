@@ -126,7 +126,7 @@ test_that("all 5 sescd parts produce one label row each", {
     expect_equal(nrow(d), 5)
 })
 
-test_that("unknown part is silently dropped from labels", {
+test_that("unknown part is dropped from labels with a warning", {
     df <- data.frame(
         x = 0,
         y = 0,
@@ -135,8 +135,7 @@ test_that("unknown part is silently dropped from labels", {
     )
     p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, part = part)) +
         geom_colon_label()
-    expect_no_error(ggplot2::layer_data(p))
-    d <- ggplot2::layer_data(p)
+    expect_warning(d <- ggplot2::layer_data(p), "unknown part.*BadPart")
     expect_equal(nrow(d), 1)
 })
 

@@ -9,6 +9,8 @@ geom_colon_label(
   data = NULL,
   show.legend = NA,
   variant = "standard",
+  na.rm = FALSE,
+  inherit.aes = TRUE,
   ...
 )
 }
@@ -43,6 +45,14 @@ but unobserved levels are omitted.}
 
 \item{variant}{A character string specifying the variant of the colon blueprint to use.}
 
+\item{na.rm}{If \code{FALSE}, the default, missing values are removed with a
+warning. If \code{TRUE}, missing values are silently removed.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
+rather than combining with them. This is most useful for helper functions
+that define both data and aesthetics and shouldn't inherit behaviour from
+the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{annotation_borders()}}.}
+
 \item{\dots}{Additional parameters passed to the layer, such as fill, color, size, etc.}
 }
 \value{
@@ -62,6 +72,6 @@ The geom_colon_label function creates a layer that can be added to a ggplot2 plo
 It requires the aesthetics x, y, and part to be specified, which correspond to the position
 and the specific part of the colon to be labeled.
 
-The variants can be defined in the colon_variants list, which should contain
-different blueprints for the colon geometry.#'
+Part names are matched as in \code{\link[=geom_colon]{geom_colon()}}. The computed \code{angle}
+rotates labels of vertical segments by 90 degrees.
 }

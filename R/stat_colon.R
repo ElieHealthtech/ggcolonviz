@@ -8,10 +8,14 @@
 #'   It requires the aesthetics x, y, and part to be specified, which correspond to the position
 #'   and the specific part of the colon to be plotted.
 #'
-#'   The variants can be defined in the colon_variants list, which should contain
-#'   different blueprints for the colon geometry.
+#'   Part names are matched leniently (case, spaces and common synonyms such
+#'   as `"TI"` or `"sigmoid colon"` are accepted); rows whose part cannot be
+#'   matched are dropped with a warning. See [colon_parts()] for the valid
+#'   names and [list_colon_variants()] for the available variants.
 #' @inheritParams ggplot2::layer
 #' @param variant A character string specifying the variant of the colon blueprint to use.
+#' @param na.rm If `FALSE`, the default, missing values are removed with a
+#'   warning. If `TRUE`, missing values are silently removed.
 #' @param \dots Additional parameters passed to the layer, such as fill, color, size, etc.
 #' @return A ggplot2 layer that can be added to a plot to visualize the colon geometry.
 #' @export
@@ -20,6 +24,8 @@ geom_colon <- function(
     data = NULL,
     variant = "standard",
     show.legend = NA,
+    na.rm = FALSE,
+    inherit.aes = TRUE,
     ...
 ) {
     ggplot2::layer(
@@ -29,7 +35,8 @@ geom_colon <- function(
         geom = "polygon",
         position = "identity",
         show.legend = show.legend,
-        params = list(variant = variant, na.rm = FALSE, ...)
+        inherit.aes = inherit.aes,
+        params = list(variant = variant, na.rm = na.rm, ...)
     )
 }
 
@@ -37,6 +44,15 @@ StatColon <- ggplot2::ggproto(
     "StatColon",
     ggplot2::Stat,
     required_aes = c("x", "y", "part"),
+
+    setup_data = function(data, params) {
+        data$part <- .normalize_part(
+            data$part,
+            params$variant %||% "standard",
+            caller = "geom_colon()"
+        )
+        data
+    },
 
     compute_panel = function(data, scales, params, variant = "standard") {
         # Pull the correct blueprint from the registry

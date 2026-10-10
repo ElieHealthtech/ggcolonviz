@@ -5,7 +5,7 @@
 #' [geom_colon_label()], [colon_sf()], and [colon_heatmap_grid()].
 #'
 #' @param name A non-empty character string naming the new variant.
-#'   Existing variants (including `"standard"` and `"sescd"`) will be
+#'   Existing variants (including `"standard"`, `"sescd"` and `"ibd"`) will be
 #'   overwritten if the same name is supplied.
 #' @param data A data frame with at least three columns:
 #'   \describe{
@@ -58,13 +58,15 @@ register_colon_variant <- function(name, data) {
         )
     }
     .ggcolonviz_env$variants[[name]] <- data
+    # Label anchors belong to the blueprint they were drawn for
+    .ggcolonviz_env$label_anchors[[name]] <- NULL
     invisible(name)
 }
 
 #' List Registered Colon Variant Names
 #'
 #' Returns the names of all variants currently registered in the package
-#' registry, including the built-in `"standard"` and `"sescd"` variants plus
+#' registry, including the built-in `"standard"`, `"sescd"` and `"ibd"` variants plus
 #' any added via [register_colon_variant()].
 #'
 #' @return A character vector of variant names.

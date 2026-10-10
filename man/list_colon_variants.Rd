@@ -11,7 +11,7 @@ A character vector of variant names.
 }
 \description{
 Returns the names of all variants currently registered in the package
-registry, including the built-in \code{"standard"} and \code{"sescd"} variants plus
+registry, including the built-in \code{"standard"}, \code{"sescd"} and \code{"ibd"} variants plus
 any added via \code{\link[=register_colon_variant]{register_colon_variant()}}.
 }
 \examples{

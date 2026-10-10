@@ -9,6 +9,8 @@ geom_colon(
   data = NULL,
   variant = "standard",
   show.legend = NA,
+  na.rm = FALSE,
+  inherit.aes = TRUE,
   ...
 )
 }
@@ -43,6 +45,14 @@ display. To include legend keys for all levels, even
 when no data exists, use \code{TRUE}.  If \code{NA}, all levels are shown in legend,
 but unobserved levels are omitted.}
 
+\item{na.rm}{If \code{FALSE}, the default, missing values are removed with a
+warning. If \code{TRUE}, missing values are silently removed.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
+rather than combining with them. This is most useful for helper functions
+that define both data and aesthetics and shouldn't inherit behaviour from
+the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{annotation_borders()}}.}
+
 \item{\dots}{Additional parameters passed to the layer, such as fill, color, size, etc.}
 }
 \value{
@@ -60,6 +70,8 @@ The geom_colon function creates a layer that can be added to a ggplot2 plot.
 It requires the aesthetics x, y, and part to be specified, which correspond to the position
 and the specific part of the colon to be plotted.
 
-The variants can be defined in the colon_variants list, which should contain
-different blueprints for the colon geometry.
+Part names are matched leniently (case, spaces and common synonyms such
+as \code{"TI"} or \code{"sigmoid colon"} are accepted); rows whose part cannot be
+matched are dropped with a warning. See \code{\link[=colon_parts]{colon_parts()}} for the valid
+names and \code{\link[=list_colon_variants]{list_colon_variants()}} for the available variants.
 }

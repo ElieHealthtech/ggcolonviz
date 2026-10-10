@@ -5,7 +5,9 @@
 #' @aliases ggcolonviz-package
 "_PACKAGE"
 
-utils::globalVariables(c("part", "geometry"))
+utils::globalVariables(c("part", "geometry", "region", ".colon_x", ".colon_y", ".colon_part"))
+
+`%||%` <- function(x, y) if (is.null(x)) y else x
 
 #' @importFrom sf st_as_sf st_combine st_cast st_make_valid st_intersection st_coordinates
 #' @importFrom dplyr group_by summarise mutate case_when bind_rows
