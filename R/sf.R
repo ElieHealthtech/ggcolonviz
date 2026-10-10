@@ -45,6 +45,94 @@ colon_heatmap_grid <- function(grid_res = 500, variant = "standard") {
     )
 }
 
+#' Coordinates of a Point Inside a Segment
+#'
+#' Returns plotting coordinates that fall inside the named segments, so that
+#' lesions, biopsies or other findings can be placed by segment name rather
+#' than by raw coordinates. The coordinates match plots drawn with
+#' [colon_plot()] or [geom_colon()] at `x = 0, y = 0`.
+#'
+#' @param part A character vector of segment names. Names are matched
+#'   leniently, as in [colon_plot()].
+#' @param where Position along each segment, between 0 and 1, measured along
+#'   the longer side of the segment's bounding box (left to right for wide
+#'   segments, bottom to top for tall ones). Recycled to the length of `part`.
+#'   The default, 0.5, is the middle.
+#' @param variant A character string naming the anatomical layout.
+#' @return A data frame with columns `part` (canonical name), `x` and `y`.
+#' @export
+#' @examples
+#' lesions <- data.frame(
+#'   part = c("Terminal Ileum", "Sigmoid", "Sigmoid"),
+#'   type = c("Ulcer", "Polyp", "Stricture")
+#' )
+#' lesions <- cbind(
+#'   lesions,
+#'   colon_position(lesions$part, where = c(0.5, 0.2, 0.8), variant = "ibd")[c("x", "y")]
+#' )
+#' colon_plot(data.frame(part = "Terminal Ileum"), variant = "ibd") +
+#'   ggplot2::geom_point(
+#'     data = lesions,
+#'     ggplot2::aes(x = x, y = y, shape = type),
+#'     size = 3
+#'   )
+colon_position <- function(part, where = 0.5, variant = "standard") {
+    if (!is.numeric(where) || anyNA(where) || any(where < 0 | where > 1)) {
+        stop("`where` must contain numbers between 0 and 1.", call. = FALSE)
+    }
+    canonical <- .normalize_part(part, variant, warn = FALSE)
+    parts <- unique(.get_variant(variant)$part)
+    unknown <- unique(canonical[!canonical %in% parts])
+    if (length(unknown) > 0L) {
+        stop(
+            "Unknown part(s) ", paste0("'", unknown, "'", collapse = ", "),
+            " for variant '", variant, "'. Valid parts: ",
+            paste(parts, collapse = ", "), ".",
+            call. = FALSE
+        )
+    }
+    n <- max(length(canonical), length(where))
+    canonical <- rep_len(canonical, n)
+    where <- rep_len(where, n)
+
+    shapes <- colon_sf(variant)
+    xy <- vapply(
+        seq_len(n),
+        function(i) {
+            .point_in_part(
+                sf::st_geometry(shapes)[[match(canonical[i], shapes$part)]],
+                where[i]
+            )
+        },
+        numeric(2)
+    )
+    data.frame(part = canonical, x = xy[1, ], y = xy[2, ])
+}
+
+# Midpoint of the longest chord of `poly` cut perpendicular to its longer
+# bounding-box side, at fraction `where` (kept slightly inside the edges).
+.point_in_part <- function(poly, where) {
+    bb <- sf::st_bbox(poly)
+    f <- 0.03 + 0.94 * where
+    if (bb[["xmax"]] - bb[["xmin"]] >= bb[["ymax"]] - bb[["ymin"]]) {
+        at <- bb[["xmin"]] + f * (bb[["xmax"]] - bb[["xmin"]])
+        chord <- cbind(at, c(bb[["ymin"]] - 1, bb[["ymax"]] + 1))
+    } else {
+        at <- bb[["ymin"]] + f * (bb[["ymax"]] - bb[["ymin"]])
+        chord <- cbind(c(bb[["xmin"]] - 1, bb[["xmax"]] + 1), at)
+    }
+    cut <- sf::st_intersection(
+        sf::st_sfc(sf::st_linestring(chord)),
+        sf::st_sfc(poly)
+    )
+    if (any(sf::st_geometry_type(cut) == "GEOMETRYCOLLECTION")) {
+        cut <- sf::st_collection_extract(cut, "LINESTRING")
+    }
+    segments <- sf::st_cast(cut, "LINESTRING")
+    longest <- segments[which.max(sf::st_length(segments))]
+    sf::st_coordinates(sf::st_centroid(longest))[1, c("X", "Y")]
+}
+
 colon_grid <- function(grid_res = 500, variant = "standard") {
     colon_blueprint <- .get_variant(variant)
     expand.grid(

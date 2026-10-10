@@ -24,7 +24,8 @@ Depends:
 Imports: 
     ggplot2,
     sf,
-    dplyr
+    dplyr,
+    rlang
 Suggests:
     knitr,
     rmarkdown,
