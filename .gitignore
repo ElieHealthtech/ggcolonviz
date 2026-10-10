@@ -5,3 +5,20 @@ inst/doc
 README.html
 docs
 .DS_Store
+
+# Local environments
+.venv/
+.Rhistory
+.RData
+.Ruserdata
+
+# Secrets and credentials
+.Renviron
+.env
+.env.*
+*.pem
+*.key
+
+# Local notes
+plan.md
+*.plan.md
